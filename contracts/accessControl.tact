@@ -1,5 +1,5 @@
 struct RoleData {
-    members: map<Address, Bool>;
+    members: map<Int as uint256, Bool>;
     adminRole: Int;
 }
 
@@ -81,17 +81,25 @@ trait AccessControlBase {
     /// 
     /// WARNING: Internal function without access restriction.
     inline fun _grantRole(role: Int, account: Address) {
+        let stdAddr = parseStdAddress(account.asSlice());
+        self._grantRoleHash(role, stdAddr.address);
+    }
+
+    /// Grants `role` to `addrHash`.
+    /// 
+    /// WARNING: Internal function without access restriction.
+    inline fun _grantRoleHash(role: Int, addrHash: Int) {
         let roleData = self.roles.get(role);
         if (roleData != null) {
             let members = roleData!!.members;
-            members.set(account, true);
+            members.set(addrHash, true);
             self.roles.set(role, RoleData {
                 members,
                 adminRole: roleData!!.adminRole
             });
         } else {
-            let members: map<Address, Bool> = emptyMap();
-            members.set(account, true);
+            let members: map<Int as uint256, Bool> = emptyMap();
+            members.set(addrHash, true);
             self.roles.set(role, RoleData {
                 members,
                 adminRole: self.DEFAULT_ADMIN_ROLE
@@ -103,10 +111,18 @@ trait AccessControlBase {
     /// 
     /// WARNING: Internal function without access restriction.
     inline fun _revokeRole(role: Int, account: Address) {
+        let stdAddr = parseStdAddress(account.asSlice());
+        self._revokeRoleHash(role, stdAddr.address);
+    }
+
+    /// Revokes `role` from `addrHash`.
+    /// 
+    /// WARNING: Internal function without access restriction.
+    inline fun _revokeRoleHash(role: Int, addrHash: Int) {
         let roleData = self.roles.get(role);
         if (roleData != null) {
             let members = roleData!!.members;
-            let isDeleted = members.del(account);
+            let isDeleted = members.del(addrHash);
             if (isDeleted) {
                 self.roles.set(role, RoleData {
                     members,
@@ -148,14 +164,19 @@ trait AccessControlBase {
 
     /// Returns `true` if `account` has been granted `role`.
     fun hasRole(role: Int, account: Address): Bool {
+        let stdAddr = parseStdAddress(account.asSlice());
+        return self.hasRoleHash(role, stdAddr.address);
+    }
+
+    /// Returns `true` if `addrHash` has been granted `role`.
+    inline fun hasRoleHash(role: Int, addrHash: Int): Bool {
         let roleData = self.roles.get(role);
         if (roleData != null) {
             let members = roleData!!.members;
-            let member = members.get(account);
+            let member = members.get(addrHash);
             return member != null;
         }
         return false;
-
     }
 
     /// External getter function that returns the admin role that controls `role`.
