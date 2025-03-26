@@ -41,7 +41,7 @@ message RenounceRole {
 /// 
 /// ```tact
 /// fun foo() {
-///     require(self.hasRole(MY_ROLE, msg.sender), 132);
+///     throwUnless(132, self.hasRole(MY_ROLE, sender()));
 ///     ...
 /// }
 /// ```
@@ -50,7 +50,7 @@ message RenounceRole {
 /// 
 /// ```tact
 /// fun foo() {
-///     self.checkRole(MY_ROLE, msg.sender);
+///     self.checkRole(MY_ROLE, sender());
 ///     ...
 /// }
 /// ```
